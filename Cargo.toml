@@ -1,0 +1,8 @@
+[package]
+name = "type-packer"
+version = "0.1.0"
+authors = ["dmaxson <dmaxson@ltsnet.net>"]
+
+[dependencies]
+typenum = "1"
+generic-array = "0"
