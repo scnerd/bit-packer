@@ -17,6 +17,11 @@ impl<I: std::iter::Iterator> PeekableIterator for std::iter::Peekable<I> {
     }
 }
 
+pub struct Biterator {
+    iter: PeekableIterator<u8>,
+    offset: usize
+}
+
 #[derive(Debug, Clone)]
 pub struct Bits<N>
 where N: Unsigned,
@@ -45,12 +50,13 @@ where N: Unsigned,
 
     pub fn len(&self) -> usize { N::to_usize() }
 
-    pub fn consume_iter<'a>(offset: usize, iter: &mut PeekableIterator<Item=&'a u8>) -> Result<Bits<N>, &'static str>
+    pub fn consume_iter<'a>(offset: &mut usize, iter: &mut PeekableIterator<Item=&'a u8>) -> Result<Bits<N>, &'static str>
     {
         // Skip until offset
         for _ in 0..(offset / 8) { iter.next(); }
 
         let shift = offset % 8;
+        *offset = (offset + N::to_usize()) % 8;
 
         // TODO: (for both), determine when N < 8 (or shift + N < 8); if so, don't consume a byte at all unless N+shift wraps over the byte boundary
         if shift == 0 {
@@ -70,6 +76,7 @@ where N: Unsigned,
             let l = (N::to_usize() + 8) / 8;
             for i in 0..l {
                 data[i] = (*iter.next().unwrap() << shift) | ((**iter.peek().unwrap() & rmask) >> rshift);
+            }
 
             Ok(Bits { data })
         }
